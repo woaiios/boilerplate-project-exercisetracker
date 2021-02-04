@@ -51,6 +51,15 @@ app.post('/api/exercise/new-user', async function (req, res) {
     console.log(value);
     await client.set(key, value);
     await client.set(value, { "name": key, "data": [] });
+
+    var users = await client.get("users6013e9")
+    var u = { "_id": value, "username": key };
+    if (!users) {
+      users = [u]
+    } else {
+      users.push(u)
+    }
+    await client.set("users6013e9", users)
     //db.prefix
     res.send(`{"username":"${key}","_id":"${value}"}`)
 
@@ -139,6 +148,9 @@ app.get('/api/exercise/log', async function (req, res) {
       return
     }
   }
+  if (!limit) {
+    limit = "99999"
+  }
 
   function roughScale(x, base) {
     const parsed = parseInt(x, base);
@@ -148,6 +160,7 @@ app.get('/api/exercise/log', async function (req, res) {
 
   console.log(limit)
   limit = roughScale(limit, 10)
+  
   console.log(limit)
 
   let _key = await client.get(userId);
@@ -197,6 +210,14 @@ app.get('/api/exercise/log', async function (req, res) {
   log += "]}"
   res.setHeader("Content-Type", "application/json");
   res.send(log)
+});
+
+//api/exercise/users
+app.get('/api/exercise/users', async function (req, res) {
+  let k = "users6013e9";
+  var data = await client.get(k);
+   res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(data))
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
